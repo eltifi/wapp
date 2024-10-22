@@ -7,13 +7,15 @@ services:
       context: .
     expose:
       - 3000
+    restart: unless-stopped
     depends_on:
-      - directus
+      - api
 
   api:
     image: directus/directus
     expose:
       - 8055
+    restart: unless-stopped
     depends_on:
       - db
       - redis
@@ -22,7 +24,7 @@ services:
 
   db:
     image: mariadb
-    restart: always
+    restart: unless-stopped
     environment:
       - MYSQL_DATABASE=${DB_NAME}
       - MYSQL_USERNAME=${DB_USER}
@@ -33,7 +35,7 @@ services:
 
   redis:
     image: redis
-    restart: always
+    restart: unless-stopped
     volumes:
       - redis_data:/data
 
@@ -42,6 +44,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    restart: unless-stopped
     volumes:
       - caddy_data:/data
       - caddy_config:/config
