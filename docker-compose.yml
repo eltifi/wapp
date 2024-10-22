@@ -1,0 +1,57 @@
+name: wapp
+
+services:
+  app:
+    image: wapp:latest
+    build:
+      context: .
+    expose:
+      - 3000
+    depends_on:
+      - directus
+
+  api:
+    image: directus/directus
+    expose:
+      - 8055
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./data/uploads:/directus/uploads
+
+  db:
+    image: mariadb
+    restart: always
+    environment:
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USERNAME=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+
+  redis:
+    image: redis
+    restart: always
+    volumes:
+      - redis_data:/data
+
+  caddy:
+    image: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - app
+      - api
+
+volumes:
+  db_data:
+  redis_data:
+  caddy_data:
+  caddy_config:
